@@ -72,7 +72,7 @@ in
       user = git-annex-lib.mkUserOption "git-annex-fsck";
       group = git-annex-lib.mkGroupOption "git-annex-fsck";
 
-      package = lib.mkPackageOption pkgs "git-annex" {};
+      package = lib.mkPackageOption pkgs "git-annex" { };
 
       from = lib.mkOption {
         description = "Call with --from=remote";
@@ -148,14 +148,7 @@ in
 
   config.systemd.services."${attrName}" =
     let
-      mkInhibitsSleepCallPrefix =
-        cfg:
-        lib.optionalString cfg.inhibitsSleep ''
-          ${pkgs.systemd}/bin/systemd-inhibit \
-            --who="git-annex-fsck" \
-            --what="sleep" \
-            --why="FSCK run" \
-        '';
+      inhibitCallPrefix = git-annex-lib.mkInhibitCallPrefix "git-annex-fsck" cfg;
 
       mkScript =
         cfg:
@@ -168,7 +161,9 @@ in
             (lib.optionalString (cfg.fast) "--fast")
             (lib.optionalString (cfg.incremental) "--incremental")
             (lib.optionalString (cfg.more) "--more")
-            (lib.optionalString (!isNull cfg.incremental-schedule) "--incremental-schedule=${cfg.incremental-schedule}")
+            (lib.optionalString (
+              !isNull cfg.incremental-schedule
+            ) "--incremental-schedule=${cfg.incremental-schedule}")
             (lib.optionalString (!isNull cfg.numcopies) "--numcopies=${cfg.numcopies}")
             (lib.optionalString (cfg.all) "--all")
             (lib.optionalString (!isNull cfg.branch) "--numcopies=${cfg.branch}")
@@ -178,12 +173,13 @@ in
             (git-annex-lib.processJsonOption cfg)
             (git-annex-lib.processJsonErrorMessagesOption cfg)
           ] ++ common-flags;
-        in "${git-annex} ${lib.concatStringsSep " " flags} ${cfg.path}";
+        in
+        "${git-annex} ${lib.concatStringsSep " " flags} ${cfg.path}";
     in
     lib.mkIf cfg.enable {
       description = "git-annex-fsck service '${attrName}'";
       path = [ cfg.package ];
-      script = "exec " + (mkInhibitsSleepCallPrefix cfg) + (mkScript cfg);
+      script = "exec " + inhibitCallPrefix + (mkScript cfg);
 
       unitConfig = {
         RequiresMountFor = [ cfg.path ];

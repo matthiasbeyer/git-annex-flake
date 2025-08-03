@@ -12,12 +12,12 @@ pkgs.nixosTest {
     server = { config, pkgs, ... }:
       {
         imports = [
-          ({ config, pkgs, ... }: inputs.self.lib."${system}".mkService {
+          ({ config, pkgs, ... }: inputs.self.lib."${system}".mkFsckService {
             name = "git-annex-fsck-repo-a";
             inherit config pkgs;
           })
 
-          ({ config, pkgs, ... }: inputs.self.lib."${system}".mkService {
+          ({ config, pkgs, ... }: inputs.self.lib."${system}".mkFsckService {
             name = "git-annex-fsck-repo-b";
             inherit config pkgs;
           })

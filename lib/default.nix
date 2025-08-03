@@ -1,7 +1,8 @@
 { callPackage, ... }:
 
 {
-  mkService = callPackage ./mk-service.nix {};
+  mkFsckService = callPackage ./mk-fsck-service.nix {};
+  mkSatisfyService = callPackage ./mk-satisfy-service.nix {};
 
   mkUserOption = callPackage ./mkUserOption.nix {};
   mkGroupOption = callPackage ./mkGroupOption.nix {};
@@ -17,4 +18,6 @@
 
   common-options = callPackage ./processCommonOptions.nix {};
   processJsonErrorMessagesOption = callPackage ./processJsonErrorMessagesOption.nix {};
+
+  mkInhibitCallPrefix = callPackage ./mkInhibitCallPrefix.nix {};
 }
